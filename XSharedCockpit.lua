@@ -21,7 +21,7 @@ local running = false
 local is_server = true
 local is_connected = false
 local socket = require "socket"
-local config_file_path = AIRCRAFT_PATH
+local config_file_path = AIRCRAFT_PATH .. 'smartcopilot.cfg'
 
 local function isempty(s)
   return s == nil or s == ''
@@ -37,7 +37,6 @@ function split (inputstr, sep)
         end
         return t
 end
-
 
 function start_server()
     running = true
