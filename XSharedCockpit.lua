@@ -13,6 +13,10 @@ drefs[10] = "sim/flightmodel/position/local_vx"
 drefs[11] = "sim/flightmodel/position/local_vy"
 drefs[12] = "sim/flightmodel/position/local_vz"
 
+local master_address = '127.0.0.1'
+local slave_address = '127.0.0.1'
+local slave_port = 49001
+local master_port = 49000
 local running = false
 local is_server = true
 local is_connected = false
@@ -35,8 +39,8 @@ function start_server()
     running = true
     master = socket.udp()
     print("Starting master broadcaster")
-    master:setsockname('127.0.0.1', 49000)
-    master:setpeername('127.0.0.1', 49001)
+    master:setsockname(master_address, master_port)
+    master:setpeername(slave_address, slave_port)
     is_connected = true
 end
 
@@ -51,8 +55,8 @@ function start_slave()
     slave = socket.udp()
     set_array("sim/operation/override/override_planepath", 0, 1)
     print("Starting receiver")
-    slave:setsockname('127.0.0.1', 49001)
-    slave:setpeername('127.0.0.1', 49000)
+    slave:setsockname(slave_address, slave_port)
+    slave:setpeername(master_address, master_port)
     slave:settimeout(0)
     is_connected = true
 end
