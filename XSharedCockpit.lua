@@ -26,12 +26,15 @@ local function isempty(s)
   return s == nil or s == ''
 end
 
-function split(s, delimiter)
-    result = {};
-    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
-        table.insert(result, match);
-    end
-    return result;
+function split (inputstr, sep)
+        if sep == nil then
+                sep = "%s"
+        end
+        local t={}
+        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+                table.insert(t, str)
+        end
+        return t
 end
 
 
@@ -46,6 +49,7 @@ end
 
 function stop_server()
     print("Stopping master broadcaster")
+    broadcast_datarefs("close")
     running = false
     master:close()
 end
@@ -106,10 +110,14 @@ function send_datarefs()
 end
 
 local function set_datarefs(s)
-    dref_array = split(s, " ")
-    for k, v in ipairs(dref_array) do
-        local dref_name, s_value = split(v, "=")
-        value = tonumber(s_value)
+    splitstr = split(s, " ")
+    for k, v in ipairs(splitstr) do
+        split_value = split(v, "=")
+        dref_name, value = split_value[1], split_value[2]
+        value = tonumber(value)
+        if value == nil or dref_name == nil then
+            return
+        end
         set(dref_name, value)
     end
 end
@@ -119,7 +127,7 @@ function sync_datarefs()
         return
     end
     received = slave:receive()
-    if(isempty) then
+    if(isempty(received)) then
         return
     end
 
