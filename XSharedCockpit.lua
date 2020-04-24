@@ -32,7 +32,7 @@ end
 
 function split (inputstr, sep)
         if sep == nil then
-                sep = "%s"
+            sep = "%s"
         end
         local t={}
         for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
