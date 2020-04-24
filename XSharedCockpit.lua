@@ -21,6 +21,7 @@ local running = false
 local is_server = true
 local is_connected = false
 local socket = require "socket"
+local config_file_path = AIRCRAFT_PATH
 
 local function isempty(s)
   return s == nil or s == ''
