@@ -7,4 +7,4 @@ In the future, a GUI will be added to allow the user to connect to computers tha
 
 Support for smartcopilot.cfg files will also be added, allowing the plugin to sync all required datarefs in order to have a "complete" plugin
 
-Additionally, this plugin is available as a public repo on github over here, if you want to contribute to this project
+(Someone please help me with the README and descriptions I have no idea what I'm doing)
