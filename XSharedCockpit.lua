@@ -49,6 +49,7 @@ end
 function start_slave()
     running = true
     slave = socket.udp()
+    set_array("sim/operation/override/override_planepath", 0, 1)
     print("Starting receiver")
     slave:setsockname('127.0.0.1', 49001)
     slave:setpeername('127.0.0.1', 49000)
@@ -58,6 +59,7 @@ end
 
 function stop_slave()
     running = false
+    set_array("sim/operation/override/override_planepath", 0, 0)
     print("Stopping receiver")
     slave:close()
 end
