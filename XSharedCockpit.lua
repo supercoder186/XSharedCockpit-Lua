@@ -1,4 +1,7 @@
 --posx = find_dataref("sim/flightmodel/position/local_x")
+
+ini_parser = require 'inifile_parser'
+
 local drefs = {}
 drefs[1] = "sim/flightmodel/position/local_x"
 drefs[2] = "sim/flightmodel/position/local_y"
