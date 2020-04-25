@@ -26,12 +26,22 @@ local is_server = true
 local is_connected = false
 local socket = require "socket"
 local config_file_path = AIRCRAFT_PATH .. 'smartcopilot.cfg'
+local written = false
 
 ini.parse_data("")
 local config = ini.parse_file(config_file_path)
 
 local master_overrides = {}
 local slave_overrides = {"sim/operation/override/override_planepath[0]"}
+
+function write_to_file(text, filename)
+    local file = io.open(filename, 'r')
+    io.output(file)
+    io.write(text)
+    io.flush()
+    io.close()
+    print("file written")
+end
 
 function split (inputstr, sep)
         if sep == nil then
@@ -129,13 +139,6 @@ function start_server()
     master = socket.udp()
     master:setsockname(master_address, master_port)
     master:setpeername(slave_address, slave_port)
-    file = io.open("drefs.txt", "w")
-    io.output(file)
-    for k, v in ipairs(drefs) do
-        io.write(v .. '\n')
-    end
-    io.flush()
-    io.close()
     print("Starting master broadcaster")
     is_connected = true
 end
@@ -200,12 +203,11 @@ function send_datarefs()
         if #parsed == 2 then
             value = get(parsed[1], parsed[2])
             if value then
-                dataref_string = dataref_string .. v .. "=" .. value .. " "
+                dataref_string = dataref_string .. k .. "=" .. value .. " "
             end
         elseif #parsed == 1 then
-            print(value)
             if value then
-                dataref_string = dataref_string .. v .. "=" .. value .. " "
+                dataref_string = dataref_string .. k .. "=" .. value .. " "
             end
         end
     end
