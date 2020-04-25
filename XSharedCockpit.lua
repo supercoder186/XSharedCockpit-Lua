@@ -31,17 +31,6 @@ local function isempty(s)
   return s == nil or s == ''
 end
 
-function split (inputstr, sep)
-        if sep == nil then
-            sep = "%s"
-        end
-        local t={}
-        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-                table.insert(t, str)
-        end
-        return t
-end
-
 function start_server()
     running = true
     master = socket.udp()
@@ -114,16 +103,6 @@ function send_datarefs()
 end
 
 local function set_datarefs(s)
-    --[[splitstr = split(s, " ")
-    for k, v in ipairs(splitstr) do
-        split_value = split(v, "=")
-        dref_name, value = split_value[1], split_value[2]
-        value = tonumber(value)
-        if value == nil or dref_name == nil then
-            return
-        end
-        set(dref_name, value)
-    end--]]
     split = ini.parse_data(s)
     if split and #split == 2 then
         set(split[1], split[2])
