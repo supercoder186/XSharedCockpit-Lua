@@ -50,5 +50,3 @@ function parse_file(file_name)
     end
     return t
 end
-
-t = parse_file("smartcopilot.cfg")
