@@ -3,7 +3,7 @@ local function isnotempty(s)
 end
 
 local function remove_comments(s)
-    rgx = '[ ]*%#+.+'
+    rgx = '[ ]*[#;]+.*'
     match = s:match(rgx)
     if isnotempty(match) then
         s = s:gsub(match, "")
