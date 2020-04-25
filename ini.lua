@@ -24,7 +24,7 @@ local function parse_data(s)
     table = {}
     for k, v in string.gmatch(s, rgx) do
         table[1] = k
-        table[2] = v
+        table[2] = tonumber(v)
     end
     return table
 end
@@ -44,7 +44,7 @@ function parse_file(file_name)
         else
             data = parse_data(line)
             if data and #data == 2 then
-                t[current_section][data[1]] = tonumber(data[2])
+                t[current_section][data[1]] = data[2]
             end
         end
     end
