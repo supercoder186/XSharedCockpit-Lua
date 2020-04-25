@@ -114,7 +114,7 @@ function send_datarefs()
 end
 
 local function set_datarefs(s)
-    splitstr = split(s, " ")
+    --[[splitstr = split(s, " ")
     for k, v in ipairs(splitstr) do
         split_value = split(v, "=")
         dref_name, value = split_value[1], split_value[2]
@@ -123,6 +123,10 @@ local function set_datarefs(s)
             return
         end
         set(dref_name, value)
+    end--]]
+    split = ini.parse_data(s)
+    if split and #split == 2 then
+        set(split[1], split[2])
     end
 end
 
