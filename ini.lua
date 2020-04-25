@@ -33,6 +33,7 @@ end
 
 function ini.parse_dfname(s)
     rgx = '(%S+)%[(%d+)%]'
+    s = s:gsub("_FIXED_INDEX_", "")
     for k, v in s:gmatch(rgx) do
         return {k, tonumber(v)}
     end

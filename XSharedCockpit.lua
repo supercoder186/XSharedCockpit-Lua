@@ -45,7 +45,6 @@ function split (inputstr, sep)
         end
         return t
 end
-.
 
 local function number_contains(number, check)
     --(Checks if number has check as one of its addition factors)
@@ -191,7 +190,7 @@ function send_datarefs()
         return
     end
     dataref_string = ""
-    for v in list_iter(drefs) do
+    for k, v in ipairs(drefs) do
         parsed = ini.parse_dfname(v)
         if #parsed == 2 then
             value = get(parsed[1], parsed[2])
@@ -213,7 +212,7 @@ function send_slow_datarefs()
         return
     end
     dataref_string = ""
-    for v in list_iter(slow_drefs) do
+    for k, v in ipairs(slow_drefs) do
         parsed = ini.parse_dfname(v)
         if #parsed == 2 then
             value = get(parsed[1], parsed[2])
@@ -232,7 +231,7 @@ end
 
 local function set_datarefs(s)
     s = split(s, " ")
-    for v in list_iter(s) do
+    for k, v in ipairs(s) do
         data = ini.parse_data(s)
         for k, v in pairs(data) do
             if #v == 2 then
@@ -277,5 +276,5 @@ function often()
     end
 end
 
-do_often("often()")
+--do_often("often()")
 do_every_draw("loop()")
