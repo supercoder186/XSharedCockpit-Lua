@@ -1,3 +1,5 @@
+local ini = {}
+
 local function isnotempty(s)
   return not(s == nil or s == '')
 end
@@ -19,7 +21,7 @@ local function detect_section(s)
     end
 end
 
-local function parse_data(s)
+function parse_data(s)
     rgx = '(%S+)[ ]*=[ ]*(%S+)'
     table = {}
     for k, v in string.gmatch(s, rgx) do
@@ -29,7 +31,33 @@ local function parse_data(s)
     return table
 end
 
-function parse_file(file_name)
+function ini.parse_dfname(s)
+    rgx = '(%S+)%[(%d+)%]'
+    for k, v in s:gmatch(rgx) do
+        return {k, tonumber(v)}
+    end
+    return {k}
+end
+
+function ini.parse_data(s)
+    rgx = '(%S+)[ ]*=[ ]*(%S+)'
+    array_rgx = '(%S+)[%s]*%[(%d+)%][ ]*=[ ]*(%S+)'
+    table = {}
+    if s:match('%[%d+%]') then
+        for k, i, v in string.gmatch(s, array_rgx) do
+            table[1] = k
+            table[2] = {tonumber(i), tonumber(v)}
+        end
+    else
+        for k, v in string.gmatch(s, rgx) do
+            table[1] = k
+            table[2] = {tonumber(v)}
+        end
+    end
+    return table
+end
+
+function ini.parse_file(file_name)
     file = io.open(file_name, "r")
     io.input(file)
     current_section = ""
@@ -50,3 +78,5 @@ function parse_file(file_name)
     end
     return t
 end
+
+return ini

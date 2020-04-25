@@ -1,7 +1,4 @@
---posx = find_dataref("sim/flightmodel/position/local_x")
-
-
-ini_parser = require 'Resources.plugins.FlyWithLua.Scripts.XSharedCockpit.ini'
+ini = require 'Resources.plugins.FlyWithLua.Scripts.XSharedCockpit.ini'
 
 local drefs = {}
 drefs[1] = "sim/flightmodel/position/local_x"
@@ -17,6 +14,9 @@ drefs[10] = "sim/flightmodel/position/local_vx"
 drefs[11] = "sim/flightmodel/position/local_vy"
 drefs[12] = "sim/flightmodel/position/local_vz"
 
+local array_drefs = {}
+
+
 slow_drefs = {}
 
 local master_address = '127.0.0.1'
@@ -29,10 +29,23 @@ local is_connected = false
 local socket = require "socket"
 local config_file_path = AIRCRAFT_PATH .. 'smartcopilot.cfg'
 
-local config = ini_parser.parse_file(config_file_path)
+ini.parse_data("")
+local config = ini.parse_file(config_file_path)
 
 local master_overrides = {}
 local slave_overrides = {"sim/operation/override/override_planepath[0]"}
+
+function split (inputstr, sep)
+        if sep == nil then
+                sep = "%s"
+        end
+        local t={}
+        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+                table.insert(t, str)
+        end
+        return t
+end
+.
 
 local function number_contains(number, check)
     --(Checks if number has check as one of its addition factors)
@@ -85,6 +98,7 @@ if override then
         end
         if number_contains(v, 8) then
             slave_overrides[#slave_overrides + 1] = k
+        end
     end
 end
 
@@ -177,8 +191,19 @@ function send_datarefs()
         return
     end
     dataref_string = ""
-    for k, v in ipairs(drefs) do
-        dataref_string = dataref_string .. v .. "=" .. get(v) .. " "
+    for v in list_iter(drefs) do
+        parsed = ini.parse_dfname(v)
+        if #parsed == 2 then
+            value = get(parsed[1], parsed[2])
+            if value then
+                dataref_string = dataref_string .. v .. "=" .. value .. " "
+            end
+        elseif #parsed == 1 then
+            value = get(parsed[1])
+            if value then
+                dataref_string = dataref_string .. v .. "=" .. value .. " "
+            end
+        end
     end
     broadcast_datarefs(dataref_string)
 end
@@ -188,16 +213,34 @@ function send_slow_datarefs()
         return
     end
     dataref_string = ""
-    for k, v in ipairs(slow_drefs) do
-        dataref_string = dataref_string .. v .. "=" .. get(v) .. " "
+    for v in list_iter(slow_drefs) do
+        parsed = ini.parse_dfname(v)
+        if #parsed == 2 then
+            value = get(parsed[1], parsed[2])
+            if value then
+                dataref_string = dataref_string .. v .. "=" .. value .. " "
+            end
+        elseif #parsed == 1 then
+            value = get(parsed[1])
+            if value then
+                dataref_string = dataref_string .. v .. "=" .. value .. " "
+            end
+        end
     end
     broadcast_datarefs(dataref_string)
 end
 
 local function set_datarefs(s)
-    split = ini.parse_data(s)
-    if split and #split == 2 then
-        set(split[1], split[2])
+    s = split(s, " ")
+    for v in list_iter(s) do
+        data = ini.parse_data(s)
+        for k, v in pairs(data) do
+            if #v == 2 then
+                set_array(k, v[1], v[2])
+            elseif #v == 1 then
+                set(k, v[1])
+            end
+        end
     end
 end
 
@@ -228,12 +271,11 @@ function loop()
     end
 end
 
-function slow()
+function often()
     if running and is_master then
         send_slow_datarefs()
     end
 end
 
+do_often("often()")
 do_every_draw("loop()")
-
-do_sometimes("slow()")
