@@ -20,7 +20,7 @@ local function detect_section(s)
 end
 
 local function parse_data(s)
-    rgx = '([^%s]+)[ ]*=[ ]*([^%s]+)'
+    rgx = '(%S+)[ ]*=[ ]*(%S+)'
     table = {}
     for k, v in string.gmatch(s, rgx) do
         table[1] = k
