@@ -1,6 +1,7 @@
 --posx = find_dataref("sim/flightmodel/position/local_x")
 
-ini_parser = require 'inifile_parser'
+
+ini_parser = require 'Resources.plugins.FlyWithLua.Scripts.XSharedCockpit.ini'
 
 local drefs = {}
 drefs[1] = "sim/flightmodel/position/local_x"
