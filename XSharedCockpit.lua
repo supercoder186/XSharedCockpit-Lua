@@ -14,8 +14,6 @@ drefs[10] = "sim/flightmodel/position/local_vx"
 drefs[11] = "sim/flightmodel/position/local_vy"
 drefs[12] = "sim/flightmodel/position/local_vz"
 
-local array_drefs = {}
-
 
 slow_drefs = {}
 
@@ -129,9 +127,16 @@ end
 function start_server()
     running = true
     master = socket.udp()
-    print("Starting master broadcaster")
     master:setsockname(master_address, master_port)
     master:setpeername(slave_address, slave_port)
+    file = io.open("drefs.txt", "w")
+    io.output(file)
+    for k, v in ipairs(drefs) do
+        io.write(v .. '\n')
+    end
+    io.flush()
+    io.close()
+    print("Starting master broadcaster")
     is_connected = true
 end
 
@@ -198,7 +203,7 @@ function send_datarefs()
                 dataref_string = dataref_string .. v .. "=" .. value .. " "
             end
         elseif #parsed == 1 then
-            value = get(parsed[1])
+            print(value)
             if value then
                 dataref_string = dataref_string .. v .. "=" .. value .. " "
             end

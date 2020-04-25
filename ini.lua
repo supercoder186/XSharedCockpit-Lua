@@ -37,7 +37,7 @@ function ini.parse_dfname(s)
     for k, v in s:gmatch(rgx) do
         return {k, tonumber(v)}
     end
-    return {k}
+    return {s}
 end
 
 function ini.parse_data(s)
