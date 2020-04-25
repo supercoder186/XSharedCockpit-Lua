@@ -32,7 +32,7 @@ ini.parse_data("")
 local config = ini.parse_file(config_file_path)
 
 local master_overrides = {}
-local slave_overrides = {"sim/operation/override/override_planepath[0]"}
+local slave_overrides = {}
 
 function write_to_file(text, filename)
     local file = io.open(filename, 'r')
@@ -140,6 +140,9 @@ function start_server()
     master:setsockname(master_address, master_port)
     master:setpeername(slave_address, slave_port)
     print("Starting master broadcaster")
+    --[[for k, v in pairs(master_overrides) do
+        set(v, 1)
+    end--]]
     is_connected = true
 end
 
@@ -147,11 +150,18 @@ function stop_server()
     print("Stopping master broadcaster")
     broadcast_datarefs("close")
     running = false
+    --[[for k, v in pairs(master_overrides) do
+        set(v, 0)
+    end-]]
     master:close()
 end
 
 function start_slave()
     running = true
+    for k, v in pairs(slave_overrides) do
+        set(v, 1)
+    end
+    set_array("sim/operation/override/override_planepath", 0, 1)
     slave = socket.udp()
     print("Starting receiver")
     slave:setsockname(slave_address, slave_port)
@@ -162,6 +172,9 @@ end
 
 function stop_slave()
     running = false
+    for k, v in pairs(slave_overrides) do
+        set(v, 0)
+    end
     set_array("sim/operation/override/override_planepath", 0, 0)
     print("Stopping receiver")
     slave:close()
@@ -244,12 +257,18 @@ local function set_datarefs(s)
         if idx then
             v = v:gsub(idx, drefs[idx_n], 1)
             data = ini.parse_data(v)
-            for k, v in pairs(data) do
-                if #v == 2 then
-                    set_array(k, v[1], v[2])
-                elseif #v == 1 then
-                    set(k, v[1])
+            --[[for k, val in pairs(data) do
+                print(val)
+                if #val[2] == 2 then
+                    set_array(val[1], val[2][1], val[2][2])
+                elseif #val[2] == 1 then
+                    set(val[1], val[2][1])
                 end
+            end--]]
+            if #data[2] == 2 then
+                set_array(data[1], data[2][1], data[2][2])
+            elseif #data[2] == 1 then
+                set(data[1], data[2][1])
             end
         end
     end
