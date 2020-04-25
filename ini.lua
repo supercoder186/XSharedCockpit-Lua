@@ -1,24 +1,32 @@
-local function starts_with(str, start)
-   return str:sub(1, #start) == start
+local function isnotempty(s)
+  return not(s == nil or s == '')
 end
 
-function trim(str)
-   return str:gsub("^%s*(.-)%s*$", "%1")
+local function remove_comments(s)
+    rgx = '[ ]*%#+.+'
+    match = s:match(rgx)
+    if isnotempty(match) then
+        s = s:gsub(match, "")
+    end
+    return s
 end
 
-function splitstring(inputstr, sep)
-        if sep == nil then
-                sep = "%s"
-        end
-        local t={}
-        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-                table.insert(t, str)
-        end
-        return t
+local function detect_section(s)
+    rgx = '%[([^%[%]]+)%]$'
+    match = s:match(rgx)
+    if isnotempty(match) then
+        return match
+    end
 end
 
-local function isempty(s)
-  return s == nil or s == ''
+local function parse_data(s)
+    rgx = '([^%s]+)[ ]*=[ ]*([^%s]+)'
+    table = {}
+    for k, v in string.gmatch(s, rgx) do
+        table[1] = k
+        table[2] = v
+    end
+    return table
 end
 
 function parse_file(file_name)
@@ -28,20 +36,19 @@ function parse_file(file_name)
     t = {}
 
     for line in io.lines() do
-        line = trim(line)
-        if not starts_with(line, "##") then
-            if starts_with(line, "[") then
-                line = line:gsub("%[", "")
-                line = line:gsub("%]", "")
-                current_section = line
-                t[current_section] = {}
-            elseif string.find(line, "=") and not isempty(current_section) then
-                split = splitstring(line:gsub(" ", ""), "=")
-                key, value = split[1], tonumber(split[2])
-                t[current_section][key] = value
+        line = remove_comments(line)
+        section_name = detect_section(line)
+        if section_name then
+            current_section = section_name
+            t[current_section] = {}
+        else
+            data = parse_data(line)
+            if data and #data == 2 then
+                t[current_section][data[1]] = tonumber(data[2])
             end
         end
     end
-
     return t
 end
+
+t = parse_file("smartcopilot.cfg")
