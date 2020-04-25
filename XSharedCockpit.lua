@@ -49,7 +49,7 @@ function split (inputstr, sep)
         end
         local t={}
         for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-                table.insert(t, str)
+            t[#t+1] = str
         end
         return t
 end
@@ -239,13 +239,18 @@ end
 local function set_datarefs(s)
     s = split(s, " ")
     for k, v in ipairs(s) do
-        data = ini.parse_data(s)
-        for k, v in pairs(data) do
-            if #v == 2 then
-                set_array(k, v[1], v[2])
-            elseif #v == 1 then
-                set(k, v[1])
-            end
+        idx = v:match('(%S+)%s*=')
+        idx_n = tonumber(idx)
+        if idx then
+            v = v:gsub(idx, drefs[idx_n], 1)
+            --[[data = ini.parse_data(v)
+            for k, v in pairs(data) do
+                if #v == 2 then
+                    set_array(k, v[1], v[2])
+                elseif #v == 1 then
+                    set(k, v[1])
+                end
+            end--]]
         end
     end
 end

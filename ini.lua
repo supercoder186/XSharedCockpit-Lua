@@ -48,11 +48,13 @@ function ini.parse_data(s)
         for k, i, v in string.gmatch(s, array_rgx) do
             table[1] = k
             table[2] = {tonumber(i), tonumber(v)}
+            print(k .. ' ' .. i .. ' ' .. v)
         end
     else
         for k, v in string.gmatch(s, rgx) do
             table[1] = k
             table[2] = {tonumber(v)}
+            print(k .. ' ' .. v)
         end
     end
     return table
