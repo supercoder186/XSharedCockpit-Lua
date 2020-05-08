@@ -99,18 +99,6 @@ if sendback then
     end
 end
 
-local override = config["OVERRIDE"]
-if override then
-    for k, v in pairs(override) do
-        if number_contains(v, 1) then
-            master_overrides[#master_overrides + 1] = k
-        end
-        if number_contains(v, 8) then
-            slave_overrides[#slave_overrides + 1] = k
-        end
-    end
-end
-
 local slow = config["SLOW"]
 if slow then
     for k, v in pairs(slow) do
@@ -136,6 +124,19 @@ local radios = config["RADIOS"]
 if radios then
     for k, v in pairs(radios) do
         drefs[#drefs + 1] = k
+    end
+end
+
+--Add overrides to their respective arrays
+local override = config["OVERRIDE"]
+if override then
+    for k, v in pairs(override) do
+        if number_contains(v, 1) then --It is a master override
+            master_overrides[#master_overrides + 1] = k
+        end
+        if number_contains(v, 8) then --It is a slave override
+            slave_overrides[#slave_overrides + 1] = k
+        end
     end
 end
 
