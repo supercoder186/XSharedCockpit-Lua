@@ -28,8 +28,6 @@ local socket = require "socket"
 local config_file_path = AIRCRAFT_PATH .. 'smartcopilot.cfg'
 local written = false
 
-ini.parse_data("")
-local config = ini.parse_file(config_file_path)
 
 local master_overrides = {}
 local slave_overrides = {}
@@ -69,77 +67,82 @@ local function number_contains(number, check)
     return false
 end
 
-local triggers = config["TRIGGERS"]
-if triggers then
-    for k, v in pairs(triggers) do
-        drefs[#drefs + 1] = k
-    end
-end
-
-local clicks = config["CLICKS"]
-if clicks then
-    for k, v in pairs(clicks) do
-        drefs[#drefs + 1] = k .. "_scp"
-    end
-end
-
-local continued = config["CONTINUED"]
-if continued then
-    for k, v in pairs(continued) do
-        drefs[#drefs + 1] = k
-    end
-end
-
-local sendback = config["SEND_BACK"]
-if sendback then
-    for k, v in pairs(sendback) do
-        drefs[#drefs + 1] = k
-    end
-end
-
-local override = config["OVERRIDE"]
-if override then
-    for k, v in pairs(override) do
-        if number_contains(v, 1) then
-            master_overrides[#master_overrides + 1] = k
-        end
-        if number_contains(v, 8) then
-            slave_overrides[#slave_overrides + 1] = k
+local function init_drefs()
+    local config = ini.parse_file(config_file_path)
+    local triggers = config["TRIGGERS"]
+    if triggers then
+        for k, v in pairs(triggers) do
+            drefs[#drefs + 1] = k
         end
     end
-end
 
-local slow = config["SLOW"]
-if slow then
-    for k, v in pairs(slow) do
-        slow_drefs[#slow_drefs + 1] = k
+    local clicks = config["CLICKS"]
+    if clicks then
+        for k, v in pairs(clicks) do
+            drefs[#drefs + 1] = k .. "_scp"
+        end
+    end
+
+    local continued = config["CONTINUED"]
+    if continued then
+        for k, v in pairs(continued) do
+            drefs[#drefs + 1] = k
+        end
+    end
+
+    local sendback = config["SEND_BACK"]
+    if sendback then
+        for k, v in pairs(sendback) do
+            drefs[#drefs + 1] = k
+        end
+    end
+
+    local override = config["OVERRIDE"]
+    if override then
+        for k, v in pairs(override) do
+            if number_contains(v, 1) then
+                master_overrides[#master_overrides + 1] = k
+            end
+            if number_contains(v, 8) then
+                slave_overrides[#slave_overrides + 1] = k
+            end
+        end
+    end
+
+    local slow = config["SLOW"]
+    if slow then
+        for k, v in pairs(slow) do
+            slow_drefs[#slow_drefs + 1] = k
+        end
+    end
+
+    local weather = config["WEATHER"]
+    if weather then
+        for k, v in pairs(weather) do
+            slow_drefs[#slow_drefs + 1] = k
+        end
+    end
+
+    local transponder = config["TRANSPONDER"]
+    if transponder then
+        for k, v in pairs(transponder) do
+            drefs[#drefs + 1] = k
+        end
+    end
+
+    local radios = config["RADIOS"]
+    if radios then
+        for k, v in pairs(radios) do
+            drefs[#drefs + 1] = k
+        end
+    end
+
+    local function isempty(s)
+      return s == nil or s == ''
     end
 end
 
-local weather = config["WEATHER"]
-if weather then
-    for k, v in pairs(weather) do
-        slow_drefs[#slow_drefs + 1] = k
-    end
-end
-
-local transponder = config["TRANSPONDER"]
-if transponder then
-    for k, v in pairs(transponder) do
-        drefs[#drefs + 1] = k
-    end
-end
-
-local radios = config["RADIOS"]
-if radios then
-    for k, v in pairs(radios) do
-        drefs[#drefs + 1] = k
-    end
-end
-
-local function isempty(s)
-  return s == nil or s == ''
-end
+init_drefs()
 
 function start_server()
     running = true
@@ -147,9 +150,9 @@ function start_server()
     master:setsockname(master_address, master_port)
     master:setpeername(slave_address, slave_port)
     print("Starting master broadcaster")
-    --[[for k, v in pairs(master_overrides) do
+    for k, v in pairs(master_overrides) do
         set(v, 1)
-    end--]]
+    end
     is_connected = true
 end
 
@@ -157,9 +160,9 @@ function stop_server()
     print("Stopping master broadcaster")
     broadcast_datarefs("close")
     running = false
-    --[[for k, v in pairs(master_overrides) do
+    for k, v in pairs(master_overrides) do
         set(v, 0)
-    end-]]
+    end
     master:close()
 end
 
@@ -173,6 +176,8 @@ function start_slave()
     print("Starting receiver")
     slave:setsockname(slave_address, slave_port)
     slave:setpeername(master_address, master_port)
+    slave:send('handshake')
+    slave:receive()
     slave:settimeout(0)
     is_connected = true
 end
@@ -208,6 +213,9 @@ function toggle_slave()
         stop_slave()
     end
 end
+
+function check_slave_connected():
+
 
 function broadcast_datarefs(data)
     master:send(data)
@@ -264,14 +272,6 @@ local function set_datarefs(s)
         if idx then
             v = v:gsub(idx, drefs[idx_n], 1)
             data = ini.parse_data(v)
-            --[[for k, val in pairs(data) do
-                print(val)
-                if #val[2] == 2 then
-                    set_array(val[1], val[2][1], val[2][2])
-                elseif #val[2] == 1 then
-                    set(val[1], val[2][1])
-                end
-            end--]]
             if #data[2] == 2 then
                 set_array(data[1], data[2][1], data[2][2])
             elseif #data[2] == 1 then
@@ -298,6 +298,8 @@ create_command("XSharedCockpit/toggle_slave", "Toggle XSharedCockpit as Slave", 
 add_macro("Toggle XSharedCockpit as Master", "toggle_master()")
 add_macro("Toggle XSharedCockpit as Slave", "toggle_slave()")
 
+count = 0
+
 function loop()
     if running then
         if is_master then
@@ -305,6 +307,10 @@ function loop()
         else
             sync_datarefs()
         end
+        if count % 10 == 0 then
+            often()
+        end
+        count += 1
     end
 end
 
@@ -314,5 +320,4 @@ function often()
     end
 end
 
---do_often("often()")
 do_every_draw("loop()")
