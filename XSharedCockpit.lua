@@ -148,6 +148,18 @@ end
 function start_server()
     --tell the program that the server is running
     running = true
+
+    --set all the master overrides
+    for k,v in ipairs(master_overrides) do
+        --parse the dataref name and possibly index
+        dfname = ini.parse_dfname(v)
+        if #dfname == 2 then --it is an array dataref
+            set_array(dfname[1], dfname[2], 1)
+        else if #dfname == 1 then --it is a float dataref
+            set(dfname[1], 1)
+        end
+    end
+
     print("Starting master broadcaster")
     --bind the server to the address and port
     server = assert(socket.bind(master_address, master_port))
@@ -164,6 +176,15 @@ function stop_server()
     broadcast_datarefs("close")
     --tell the program that the server is no longer connected to a client
     is_connected = false
+
+    --Disable all the master overrides
+    for k,v in ipairs(master_overrides) do
+        dfname = ini.parse_dfname(v)
+        if #dfname == 2 then
+            set_array(dfname[1], dfname[2], 0)
+        end
+    end
+
     --tell the program that the server is no longer running
     running = false
     master:close()
