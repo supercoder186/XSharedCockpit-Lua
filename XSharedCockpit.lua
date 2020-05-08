@@ -22,6 +22,8 @@ slow_drefs = {}
 --define all the basic variables required
 local master_address = '127.0.0.1'
 local master_port = 49000
+local slave_address = '127.0.0.1'
+local slave_port = 49001
 local running = false
 local is_server = true
 local is_connected = false
@@ -161,11 +163,10 @@ function start_server()
         end
 
         print("Starting master broadcaster")
-        --bind the server to the address and port
-        server = assert(socket.bind(master_address, master_port))
-        --accept a client connection
-        master = server:accept()
-        print("Slave connection accepted")
+        master = socket.udp()
+        master.setsockname(master_address, master_port)
+        master.setpeername(slave_address, slave_port)
+
         --tell the program that the server is connected to a client and that broadcasts can be made
         is_connected = true
     end
@@ -210,10 +211,11 @@ function start_slave()
         set_array("sim/operation/override/override_planepath", 0, 1)
 
         --initialise the slave
-        slave = assert(socket.tcp())
+        slave = socket.udp()
+        slave.setsockname(slave_address, slave_port)
+        slave.setpeername(master_address, master_port)
 
         --connect to the server
-        slave:connect(master_address, master_port)
         print("Starting receiver")
         slave:settimeout(0)
 
@@ -323,8 +325,6 @@ function send_slow_datarefs()
             end
         end
     end
-    --Append new line so that the receiver knows that the dataref transmission for this cycle is complete
-    dataref_string = dataref_string..'\n'
 
     --Broadcast dataref string
     broadcast_datarefs(dataref_string)
@@ -360,10 +360,10 @@ function sync_datarefs()
     end
 
     --Receive the server's transmissions
-    received, error = slave:receive('*l')
+    received, error = slave:receive()
 
     --Check if received data is valid
-    if isempty(received) or error == 'closed' then
+    if isempty(received) then
         return
     end
 
