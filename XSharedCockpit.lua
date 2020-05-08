@@ -130,6 +130,13 @@ if transponder then
     end
 end
 
+local radios = config["RADIOS"]
+if radios then
+    for k, v in pairs(radios) do
+        drefs[#drefs + 1] = k
+    end
+end
+
 local function isempty(s)
   return s == nil or s == ''
 end
