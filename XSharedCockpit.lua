@@ -45,11 +45,11 @@ end
 --split a string by the separator
 function split (inputstr, sep)
     if sep == nil then
-            sep = "%s"
+        sep = "%s"
     end
-    local t={}
+    local t = {}
     for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        t[#t+1] = str
+        t[#t + 1] = str
     end
     return t
 end
@@ -142,7 +142,7 @@ end
 
 --check if a string is empty
 local function isempty(s)
-  return s == nil or s == ''
+    return s == nil or s == ''
 end
 
 function start_server()
@@ -150,24 +150,25 @@ function start_server()
     running = true
 
     --set all the master overrides
-    for k,v in ipairs(master_overrides) do
+    for k, v in ipairs(master_overrides) do
         --parse the dataref name and possibly index
         dfname = ini.parse_dfname(v)
         if #dfname == 2 then --it is an array dataref
             set_array(dfname[1], dfname[2], 1)
-        else if #dfname == 1 then --it is a float dataref
-            set(dfname[1], 1)
+            else if #dfname == 1 then --it is a float dataref
+                set(dfname[1], 1)
+            end
         end
-    end
 
-    print("Starting master broadcaster")
-    --bind the server to the address and port
-    server = assert(socket.bind(master_address, master_port))
-    --accept a client connection
-    master = server:accept()
-    print("Slave connection accepted")
-    --tell the program that the server is connected to a client and that broadcasts can be made
-    is_connected = true
+        print("Starting master broadcaster")
+        --bind the server to the address and port
+        server = assert(socket.bind(master_address, master_port))
+        --accept a client connection
+        master = server:accept()
+        print("Slave connection accepted")
+        --tell the program that the server is connected to a client and that broadcasts can be made
+        is_connected = true
+    end
 end
 
 function stop_server()
@@ -178,7 +179,7 @@ function stop_server()
     is_connected = false
 
     --Disable all the master overrides
-    for k,v in ipairs(master_overrides) do
+    for k, v in ipairs(master_overrides) do
         dfname = ini.parse_dfname(v)
         if #dfname == 2 then
             set_array(dfname[1], dfname[2], 0)
@@ -195,29 +196,30 @@ function start_slave()
     running = true
 
     --set all the slave overrides
-    for k,v in ipairs(slave_overrides) do
+    for k, v in ipairs(slave_overrides) do
         --parse the dataref name and possibly index
         dfname = ini.parse_dfname(v)
         if #dfname == 2 then --it is an array dataref
             set_array(dfname[1], dfname[2], 1)
-        else if #dfname == 1 then --it is a float dataref
-            set(dfname[1], 1)
+            else if #dfname == 1 then --it is a float dataref
+                set(dfname[1], 1)
+            end
         end
+
+        --override the xplane flight model
+        set_array("sim/operation/override/override_planepath", 0, 1)
+
+        --initialise the slave
+        slave = assert(socket.tcp())
+
+        --connect to the server
+        slave:connect(master_address, master_port)
+        print("Starting receiver")
+        slave:settimeout(0)
+
+        --Notify the program that the slave is connected to the server
+        is_connected = true
     end
-
-    --override the xplane flight model
-    set_array("sim/operation/override/override_planepath", 0, 1)
-
-    --initialise the slave
-    slave = assert(socket.tcp())
-
-    --connect to the server
-    slave:connect(master_address, master_port)
-    print("Starting receiver")
-    slave:settimeout(0)
-
-    --Notify the program that the slave is connected to the server
-    is_connected = true
 end
 
 function stop_slave()
@@ -228,7 +230,7 @@ function stop_slave()
     running = false
 
     --Disable all the slave overrides
-    for k,v in ipairs(slave_overrides) do
+    for k, v in ipairs(slave_overrides) do
         dfname = ini.parse_dfname(v)
         if #dfname == 2 then
             set_array(dfname[1], dfname[2], 0)
@@ -376,7 +378,7 @@ function sync_datarefs()
 end
 
 --register X-Plane commands to toggle master and slave
-create_command("XSharedCockpit/toggle_master", "Toggle XSharedCockpit as Master","toggle_master()", "", "")
+create_command("XSharedCockpit/toggle_master", "Toggle XSharedCockpit as Master", "toggle_master()", "", "")
 create_command("XSharedCockpit/toggle_slave", "Toggle XSharedCockpit as Slave", "toggle_slave()", "", "")
 
 --register FlyWithLua macros to toggle master and slave
@@ -396,7 +398,7 @@ function loop()
         if count % 10 == 0 then
             --often()
         end
-        count += 1
+        count = count + 1
     end
 end
 
